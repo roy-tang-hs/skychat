@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -62,14 +61,30 @@ public class MainActivity extends Activity {
         inputMsg = (EditText) findViewById(R.id.inputMsg);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
+//            TODO: get ox and send pic
             @Override
             public void onClick(View v) {
-                String message = inputMsg.getText().toString();
-                if (message != null) {
+                String msg = inputMsg.getText().toString();
+                JSONObject msgObj = null;
+                try {
+                    JSONObject jObj = new JSONObject();
+                    JSONObject ox = new JSONObject();
+                    jObj.put("type",100);
+                    jObj.put("content",msg+"\n");
+                    jObj.put("token",null);
+                        ox.put("user_ox",1);
+                        ox.put("user_ox_style","shield-blue");
+                    jObj.put("meta",ox);
+                    msgObj = jObj;
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
+                if (msg != null) {
                     inputMsg.setText("");
                     Log.d("ActivityName: ", "socket connected");
-                   mSocket.emit("chat message", message);
-                    Log.w("myApp", message);
+                   mSocket.emit("chat message", msgObj);
+                    Log.w("myApp", msgObj.toString());
                 }
                 else{
                     inputMsg.setText("");
@@ -111,9 +126,11 @@ public class MainActivity extends Activity {
         super.onDestroy();
 
         mSocket.disconnect();
-        mSocket.off("new message", onNewMessage);
+        mSocket.off("chat message", onNewMessage);
     }
 
+
+//todo: update view, append list
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -127,8 +144,8 @@ public class MainActivity extends Activity {
                         String fromName = data.getString("username");
                         String message = data.getString("content");
 
-                        Message m = new Message(fromName, message, true);
-                        appendMessage(m);
+//                        Message m = new Message(fromName, message, true);
+//                        appendMessage(m);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -155,16 +172,16 @@ public class MainActivity extends Activity {
     }
 
 
-    private void appendMessage(final Message m) {
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                listMessages.add(m);
-
-                adapter.notifyDataSetChanged();
-
-            }
-        });
-    }
+//    private void appendMessage(final Message m) {
+//        runOnUiThread(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                listMessages.add(m);
+//
+//                adapter.notifyDataSetChanged();
+//
+//            }
+//        });
+//    }
 }
