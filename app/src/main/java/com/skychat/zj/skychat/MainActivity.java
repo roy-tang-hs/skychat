@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -59,6 +60,7 @@ public class MainActivity extends Activity {
 
         btnSend = (Button) findViewById(R.id.btnSend);
         inputMsg = (EditText) findViewById(R.id.inputMsg);
+        listViewMessages = (ListView) findViewById(R.id.list_view_messages);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
 //            TODO: get ox and send pic
@@ -94,6 +96,13 @@ public class MainActivity extends Activity {
 
             }
         });
+
+        listMessages = new ArrayList<Message>();
+
+        adapter = new MessagesListAdapter(this, listMessages);
+        listViewMessages.setAdapter(adapter);
+
+
 
 
     }
@@ -140,12 +149,19 @@ public class MainActivity extends Activity {
                     JSONObject data = (JSONObject) args[0];
                     Log.d("Message",data.toString());
                     try {
-                        showToast(data.getString("username"));
+
                         String fromName = data.getString("username");
                         String message = data.getString("content");
 
+                        showToast(fromName + " + " + message);
+
 //                        Message m = new Message(fromName, message, true);
 //                        appendMessage(m);
+
+                        Message m = new Message(fromName, message, false);
+
+                        // Appending the message to chat list
+                        appendMessage(m);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -172,16 +188,16 @@ public class MainActivity extends Activity {
     }
 
 
-//    private void appendMessage(final Message m) {
-//        runOnUiThread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                listMessages.add(m);
-//
-//                adapter.notifyDataSetChanged();
-//
-//            }
-//        });
-//    }
+    private void appendMessage(final Message m) {
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                listMessages.add(m);
+
+                adapter.notifyDataSetChanged();
+
+            }
+        });
+    }
 }
