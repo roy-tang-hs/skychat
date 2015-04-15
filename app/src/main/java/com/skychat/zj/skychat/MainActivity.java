@@ -31,7 +31,6 @@ public class MainActivity extends Activity {
     private String username = "tangree";
     private String user_id = "13122";
     private String avatar = "http%3A%2F%2Fskycitizencdn-1272.kxcdn.com%2Favatar%2F1-g2.jpg";
-    private String channelId = "1";
 
     // Chat messages list adapter
     private MessagesListAdapter adapter;
@@ -45,8 +44,8 @@ public class MainActivity extends Activity {
             mSocket = IO.socket("http://54.169.49.211:8080?" +
                     "username=" + username
                     +"&userid=" + user_id
-                    +"&avatar=" + avatar
-                    +"&roomid=" + channelId);
+                    +"&avatar=" + avatar);
+
         } catch (URISyntaxException e) {}
     }
 
@@ -54,7 +53,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSocket.on("chat message", onNewMessage);
+        mSocket.on("private message", onNewMessage);
+        mSocket.on("channel message", onNewMessage);
+
+
         mSocket.connect();
 
         btnSend = (Button) findViewById(R.id.btnSend);
@@ -69,9 +71,12 @@ public class MainActivity extends Activity {
                 try {
                     JSONObject jObj = new JSONObject();
                     JSONObject ox = new JSONObject();
+                    jObj.put("senderId",user_id);
+                    jObj.put("senderName",username);
+                    jObj.put("recipientId","31806");
+                    jObj.put("senderAvatar",avatar);
                     jObj.put("type",100);
                     jObj.put("content",msg+"\n");
-                    jObj.put("token",null);
                         ox.put("user_ox",1);
                         ox.put("user_ox_style","shield-blue");
                     jObj.put("meta",ox);
@@ -126,7 +131,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
 
         mSocket.disconnect();
-        mSocket.off("chat message", onNewMessage);
+        mSocket.off("private message", onNewMessage);
     }
 
 
@@ -140,8 +145,8 @@ public class MainActivity extends Activity {
                     JSONObject data = (JSONObject) args[0];
                     Log.d("Message",data.toString());
                     try {
-                        showToast(data.getString("username"));
-                        String fromName = data.getString("username");
+                        showToast(data.getString("senderId"));
+                        String fromName = data.getString("senderName");
                         String message = data.getString("content");
 
 //                        Message m = new Message(fromName, message, true);
