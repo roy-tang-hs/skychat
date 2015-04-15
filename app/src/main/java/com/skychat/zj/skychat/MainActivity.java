@@ -16,11 +16,21 @@ import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.skychat.zj.other.Message;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+
 
 
 public class MainActivity extends Activity {
@@ -29,13 +39,17 @@ public class MainActivity extends Activity {
     private EditText inputMsg;
 
     private String username = "tangree";
-    private String user_id = "13122";
-    private String avatar = "http%3A%2F%2Fskycitizencdn-1272.kxcdn.com%2Favatar%2F1-g2.jpg";
+    private int user_id = 13122;
+    private int recipientId = 31806;
+    private String avatar = "http://skycitizencdn-1272.kxcdn.com/avatar/1-g2.jpg";
 
     // Chat messages list adapter
     private MessagesListAdapter adapter;
     private List<Message> listMessages;
     private ListView listViewMessages;
+
+    //AJAX
+    private String baseURL = "http://www.skycitizen.net/";
 
 
     private Socket mSocket;
@@ -59,8 +73,14 @@ public class MainActivity extends Activity {
 
         mSocket.connect();
 
+        // ajax call to send message Use: droidQuery
+        //  $.ajax(new AjaxOptions().url(baseURL + "api/chat/post/user/"+recipientId)
+
+
+
         btnSend = (Button) findViewById(R.id.btnSend);
         inputMsg = (EditText) findViewById(R.id.inputMsg);
+        listViewMessages = (ListView) findViewById(R.id.list_view_messages);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
 //            TODO: get ox and send pic
@@ -70,26 +90,26 @@ public class MainActivity extends Activity {
                 JSONObject msgObj = null;
                 try {
                     JSONObject jObj = new JSONObject();
-                    JSONObject ox = new JSONObject();
+                   // JSONObject ox = new JSONObject();
                     jObj.put("senderId",user_id);
                     jObj.put("senderName",username);
-                    jObj.put("recipientId","31806");
                     jObj.put("senderAvatar",avatar);
                     jObj.put("type",100);
-                    jObj.put("content",msg+"\n");
-                        ox.put("user_ox",1);
-                        ox.put("user_ox_style","shield-blue");
-                    jObj.put("meta",ox);
+                    jObj.put("content",msg);
+                    jObj.put("user_ox",0);
+                    jObj.put("user_ox_style","shield-grey");
+                    jObj.put("recipientId",recipientId);
                     msgObj = jObj;
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
 
                 if (msg != null) {
-                    inputMsg.setText("");
-                    Log.d("ActivityName: ", "socket connected");
-                   mSocket.emit("chat message", msgObj);
-                    Log.w("myApp", msgObj.toString());
+                   inputMsg.setText("");
+                   Log.d("ActivityName: ", "socket connected");
+                   mSocket.emit("private message", msgObj);
+                   Log.w("myApp", msgObj.toString());
+
                 }
                 else{
                     inputMsg.setText("");
@@ -99,6 +119,13 @@ public class MainActivity extends Activity {
 
             }
         });
+
+        listMessages = new ArrayList<Message>();
+
+        adapter = new MessagesListAdapter(this, listMessages);
+        listViewMessages.setAdapter(adapter);
+
+
 
 
     }
@@ -145,12 +172,21 @@ public class MainActivity extends Activity {
                     JSONObject data = (JSONObject) args[0];
                     Log.d("Message",data.toString());
                     try {
+
                         showToast(data.getString("senderId"));
                         String fromName = data.getString("senderName");
+
                         String message = data.getString("content");
+
+                        showToast(fromName + " + " + message);
 
 //                        Message m = new Message(fromName, message, true);
 //                        appendMessage(m);
+
+                        Message m = new Message(fromName, message, false);
+
+                        // Appending the message to chat list
+                        appendMessage(m);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -177,16 +213,16 @@ public class MainActivity extends Activity {
     }
 
 
-//    private void appendMessage(final Message m) {
-//        runOnUiThread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                listMessages.add(m);
-//
-//                adapter.notifyDataSetChanged();
-//
-//            }
-//        });
-//    }
+    private void appendMessage(final Message m) {
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                listMessages.add(m);
+
+                adapter.notifyDataSetChanged();
+
+            }
+        });
+    }
 }
