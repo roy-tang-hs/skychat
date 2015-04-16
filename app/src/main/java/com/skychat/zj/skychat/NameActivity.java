@@ -10,7 +10,8 @@ import android.widget.Toast;
 
 public class NameActivity extends Activity {
 
-    private Button btnJoin;
+    private Button btnJoinPrivate;
+    private Button btnJoinChannel;
     private EditText txtName;
 
     @Override
@@ -18,30 +19,36 @@ public class NameActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_name);
 
-        btnJoin = (Button) findViewById(R.id.btnJoin);
-        txtName = (EditText) findViewById(R.id.name);
+        btnJoinPrivate = (Button) findViewById(R.id.btnJoinPrivate);
+        btnJoinChannel = (Button) findViewById(R.id.btnJoinChannel);
+
 
         // Hiding the action bar
         getActionBar().hide();
 
-        btnJoin.setOnClickListener(new View.OnClickListener() {
+        btnJoinChannel.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                if (txtName.getText().toString().trim().length() > 0) {
-
-                    String name = txtName.getText().toString().trim();
 
                     Intent intent = new Intent(NameActivity.this,
                             MainActivity.class);
-                    intent.putExtra("name", name);
+                    intent.putExtra("target", "channel message");
 
                     startActivity(intent);
 
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "Please enter your name", Toast.LENGTH_LONG).show();
-                }
+            }
+        });
+
+        btnJoinPrivate.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NameActivity.this,
+                        MainActivity.class);
+                intent.putExtra("target", "private message");
+
+                startActivity(intent);
             }
         });
     }

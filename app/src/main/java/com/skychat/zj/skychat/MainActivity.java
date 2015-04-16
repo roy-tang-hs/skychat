@@ -1,6 +1,7 @@
 package com.skychat.zj.skychat;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,17 +17,10 @@ import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.skychat.zj.other.Message;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +42,11 @@ public class MainActivity extends Activity {
     private List<Message> listMessages;
     private ListView listViewMessages;
 
+    private String target = null;
+
     //AJAX
     private String baseURL = "http://www.skycitizen.net/";
+
 
 
     private Socket mSocket;
@@ -67,8 +64,15 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSocket.on("private message", onNewMessage);
-        mSocket.on("channel message", onNewMessage);
+
+        // Getting the person name from previous screen
+        Intent i = getIntent();
+        Bundle b = i.getExtras();
+        final String target = b.getString("target");
+
+        Log.d("Target",target);
+
+        mSocket.on(target, onNewMessage);
 
 
         mSocket.connect();
@@ -76,7 +80,20 @@ public class MainActivity extends Activity {
         // ajax call to send message Use: droidQuery
         //  $.ajax(new AjaxOptions().url(baseURL + "api/chat/post/user/"+recipientId)
 
+        if (target.equals("channel message"))
+        {
+            recipientId = 6;
+            JSONObject joinChat = new JSONObject();
+            try {
+                joinChat.put("roomid",recipientId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
+            mSocket.emit("join channel", joinChat);
+        }
+
+        Log.i("recipientId","Value" + recipientId);
 
         btnSend = (Button) findViewById(R.id.btnSend);
         inputMsg = (EditText) findViewById(R.id.inputMsg);
@@ -107,7 +124,7 @@ public class MainActivity extends Activity {
                 if (msg != null) {
                    inputMsg.setText("");
                    Log.d("ActivityName: ", "socket connected");
-                   mSocket.emit("private message", msgObj);
+                   mSocket.emit(target, msgObj);
                    Log.w("myApp", msgObj.toString());
 
                 }
@@ -158,7 +175,10 @@ public class MainActivity extends Activity {
         super.onDestroy();
 
         mSocket.disconnect();
-        mSocket.off("private message", onNewMessage);
+
+        target = getIntent().getExtras().getString("target");
+        Log.d("Target Destory",target);
+        mSocket.off(target, onNewMessage);
     }
 
 

@@ -6,7 +6,8 @@
     <string name="author_name">By ZJ</string>
     <string name="author_url">www.skycitizen.net</string>
     <string name="enter_name">Enter your name</string>
-    <string name="btn_join">JOIN</string>
+    <string name="btn_join_private">Private Message</string>
+    <string name="btn_join_channel">Channel Message</string>
     <string name="btn_send">Send</string>
     <string name="title_activity_name">NameActivity</string>
     <string name="hello_world">Hello world!</string>
