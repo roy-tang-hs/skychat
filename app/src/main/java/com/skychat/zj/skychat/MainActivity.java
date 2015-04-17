@@ -15,12 +15,14 @@ import android.widget.Toast;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.skychat.zj.other.LoadMessage;
 import com.skychat.zj.other.Message;
 
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +93,15 @@ public class MainActivity extends Activity {
             }
 
             mSocket.emit("join channel", joinChat);
+
+            LoadMessage history = new LoadMessage();
+            String response = null;
+            try {
+                response = history.run("http://www.skycitizen.net/api/chat/get/channel/6");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(response);
         }
 
         Log.i("recipientId","Value" + recipientId);
